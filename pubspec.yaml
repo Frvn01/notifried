@@ -18,6 +18,8 @@ dependencies:
   home_widget: ^0.0.8
   uuid: ^3.0.6
   flutter_colorpicker: ^1.0.4
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:

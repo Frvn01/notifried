@@ -23,3 +23,13 @@ Android notes
 
 Home-screen widget
 - Adding a native home-screen widget requires platform integration. Consider using the `home_widget` package and follow its README to add widgets for Android and iOS.
+
+Widget setup (Android scaffolded)
+- I added a basic Android widget layout and provider under `android/app/src/main/` (`res/layout/widget_nowtifried.xml`, `res/xml/nowtifried_widget_info.xml`, and `kotlin/com/example/nowtifried/NowtifriedWidgetProvider.kt`).
+- To fully enable the widget: merge the files into your app, ensure the package path matches your app package, rebuild the Android app, then add the widget from the launcher. For a dynamic widget tied to app data, follow the `home_widget` package docs and adapt `NowtifriedWidgetProvider` to read the `schedules_json` value saved by the plugin.
+
+Storage (Hive)
+- The app now uses `hive` and `hive_flutter` for local storage; no external backend required. Hive stores data inside the app's sandbox.
+
+Permissions
+- The app requests Android `POST_NOTIFICATIONS` at runtime; if denied, an in-app dialog will let the user retry or open app settings.

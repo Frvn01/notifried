@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/schedule.g.dart';
 
 import 'models/schedule.dart';
 import 'services/storage_service.dart';
@@ -19,6 +21,10 @@ void main() async {
       await Permission.notification.request();
     }
   }
+  await Hive.initFlutter();
+  Hive.registerAdapter(ScheduleAdapter());
+  await Hive.openBox<Schedule>('schedules_box');
+  await Hive.openBox('theme_box');
   await NotificationService().init();
   runApp(NowtifriedApp());
 }
@@ -36,6 +42,45 @@ class _NowtifriedAppState extends State<NowtifriedApp> {
   void initState() {
     super.initState();
     _loadTheme();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureNotificationPermission());
+  }
+
+  Future<void> _ensureNotificationPermission() async {
+    if (!Platform.isAndroid) return;
+    var status = await Permission.notification.status;
+    if (status.isGranted) return;
+
+    final retry = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Notifications permission'),
+        content: Text('This app needs permission to show notifications for your schedules.\n\nWould you like to allow notifications?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text('No')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Yes')),
+        ],
+      ),
+    );
+
+    if (retry == true) {
+      final result = await Permission.notification.request();
+      if (!result.isGranted) {
+        final open = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text('Permission denied'),
+            content: Text('Notifications permission was denied. Open app settings to enable it?'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel')),
+              TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Open Settings')),
+            ],
+          ),
+        );
+        if (open == true) {
+          await openAppSettings();
+        }
+      }
+    }
   }
 
   Future<void> _loadTheme() async {

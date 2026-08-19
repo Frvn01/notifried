@@ -1,36 +1,37 @@
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
+  import 'package:hive/hive.dart';
 import '../models/schedule.dart';
 import 'widget_service.dart';
 
 class StorageService {
-  static const _schedulesKey = 'schedules_v1';
-  static const _themeColorKey = 'theme_color_v1';
+    static const _schedulesBox = 'schedules_box';
+    static const _themeBox = 'theme_box';
 
   Future<List<Schedule>> loadSchedules() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_schedulesKey) ?? [];
-    return raw.map((e) => Schedule.fromJson(e)).toList();
+      final box = Hive.box<Schedule>(_schedulesBox);
+      return box.values.toList();
   }
 
   Future<void> saveSchedules(List<Schedule> list) async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = list.map((s) => s.toJson()).toList();
-    await prefs.setStringList(_schedulesKey, data);
     // update home-screen widget data (best-effort)
     try {
       await WidgetService.updateWidget(list);
     } catch (_) {}
+      final box = Hive.box<Schedule>(_schedulesBox);
+      await box.clear();
+      for (var s in list) {
+        await box.add(s);
+      }
   }
 
   Future<int?> loadThemeColor() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_themeColorKey);
+      final box = Hive.box(_themeBox);
+      return box.get('color') as int?;
   }
 
   Future<void> saveThemeColor(int colorValue) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_themeColorKey, colorValue);
+      final box = Hive.box(_themeBox);
+      await box.put('color', colorValue);
   }
 }

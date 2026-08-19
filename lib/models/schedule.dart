@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
-class Schedule {
+part 'schedule.g.dart';
+
+@HiveType(typeId: 1)
+class Schedule extends HiveObject {
   String id;
   String title;
   String type; // school, work, reminder
