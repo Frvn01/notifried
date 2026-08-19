@@ -22,12 +22,12 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
         val schedulesJson = readSchedulesJson(context)
         val entries = buildEntriesFromJson(schedulesJson)
 
-        // Populate up to 3 lines and colored dots
+        // Populate up to 3 lines and colored dots, and set per-line click intents with schedule id
         val idsLine = listOf(R.id.widget_line1, R.id.widget_line2, R.id.widget_line3)
         val idsDot = listOf(R.id.widget_dot1, R.id.widget_dot2, R.id.widget_dot3)
         for (i in 0..2) {
             if (i < entries.size) {
-                val (timeStr, title, colorInt) = entries[i]
+                val (timeStr, title, colorInt, id) = entries[i]
                 views.setViewVisibility(idsLine[i], android.view.View.VISIBLE)
                 views.setViewVisibility(idsDot[i], android.view.View.VISIBLE)
                 views.setTextViewText(idsLine[i], "$timeStr • $title")
@@ -35,6 +35,17 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
                     views.setInt(idsDot[i], "setBackgroundColor", colorInt)
                 } catch (e: Exception) {
                     // ignore color set failure
+                }
+
+                // Create PendingIntent to open the app and include the schedule id as extra
+                try {
+                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    intent?.putExtra("schedule_id", id)
+                    val pi = PendingIntent.getActivity(context, id.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE)
+                    views.setOnClickPendingIntent(idsLine[i], pi)
+                    views.setOnClickPendingIntent(idsDot[i], pi)
+                } catch (e: Exception) {
+                    // ignore pending intent failures
                 }
             } else {
                 views.setViewVisibility(idsLine[i], android.view.View.GONE)
@@ -68,23 +79,24 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
         return null
     }
 
-    private fun buildEntriesFromJson(json: String?): List<Triple<String, String, Int>> {
-        val results = mutableListOf<Triple<String, String, Int>>()
+    private fun buildEntriesFromJson(json: String?): List<Quadruple<String, String, Int, String>> {
+        val results = mutableListOf<Quadruple<String, String, Int, String>>()
         if (json == null) return results
         try {
             val arr = JSONArray(json)
             val now = Instant.now()
-            val items = mutableListOf<Triple<Instant, String, Int>>()
+            val items = mutableListOf<Quadruple<Instant, String, Int, String>>()
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 val title = obj.optString("title", "")
                 val startStr = obj.optString("start", null)
                 val color = obj.optInt("color", 0xFF888888.toInt())
+                val id = obj.optString("id", "")
                 if (startStr == null) continue
                 try {
                     val inst = Instant.parse(startStr)
                     if (inst.isAfter(now)) {
-                        items.add(Triple(inst, title, color))
+                        items.add(Quadruple(inst, title, color, id))
                     }
                 } catch (e: Exception) {
                     // ignore parse error
@@ -93,12 +105,15 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
             items.sortBy { it.first }
             val fmt = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
             val top = items.take(3)
-            for ((time, title, color) in top) {
-                results.add(Triple(fmt.format(time), title, color))
+            for ((time, title, color, id) in top) {
+                results.add(Quadruple(fmt.format(time), title, color, id))
             }
         } catch (e: Exception) {
             // ignore
         }
         return results
     }
+
+    // Simple quadruple data class for Kotlin 1.3 compatibility
+    data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 }

@@ -4,22 +4,25 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  flutter_local_notifications: ^12.0.4
-  timezone: ^0.8.0
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.1
   shared_preferences: ^2.0.15
   intl: ^0.17.0
   permission_handler: ^10.4.0
-  home_widget: ^0.0.8
+  # Use a permissive constraint for `home_widget` so pub can resolve packages.
+  # If you prefer a specific version or a git source, replace `any` with that.
+  home_widget: any
   uuid: ^3.0.6
   flutter_colorpicker: ^1.0.4
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_svg: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +32,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/7a5d0964-bc22-4940-9d1a-9d5b53a2f6a0.png
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

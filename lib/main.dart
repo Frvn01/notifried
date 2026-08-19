@@ -29,6 +29,9 @@ void main() async {
   runApp(NowtifriedApp());
 }
 
+import 'package:flutter/services.dart';
+import 'screens/schedule_detail_screen.dart';
+
 class NowtifriedApp extends StatefulWidget {
   @override
   State<NowtifriedApp> createState() => _NowtifriedAppState();
@@ -37,12 +40,17 @@ class NowtifriedApp extends StatefulWidget {
 class _NowtifriedAppState extends State<NowtifriedApp> {
   final StorageService _storage = StorageService();
   Color _themeColor = Colors.blue;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static const _channel = MethodChannel('nowtifried/widget');
 
   @override
   void initState() {
     super.initState();
     _loadTheme();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureNotificationPermission());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ensureNotificationPermission();
+      _setupWidgetChannel();
+    });
   }
 
   Future<void> _ensureNotificationPermission() async {
@@ -83,6 +91,33 @@ class _NowtifriedAppState extends State<NowtifriedApp> {
     }
   }
 
+  void _setupWidgetChannel() async {
+    // Handle runtime widget taps while app is running
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'onWidgetTap') {
+        final id = call.arguments as String?;
+        if (id != null) _openSchedule(id);
+      }
+    });
+
+    // Check initial id when app launched from widget
+    try {
+      final initId = await _channel.invokeMethod<String>('getInitialScheduleId');
+      if (initId != null) {
+        // Delay until navigator is ready
+        WidgetsBinding.instance.addPostFrameCallback((_) => _openSchedule(initId));
+      }
+    } catch (_) {}
+  }
+
+  void _openSchedule(String id) async {
+    final list = await _storage.loadSchedules();
+    final s = list.firstWhere((e) => e.id == id, orElse: () => null as Schedule);
+    if (s != null) {
+      navigatorKey.currentState?.push(MaterialPageRoute(builder: (_) => ScheduleDetailScreen(scheduleId: id)));
+    }
+  }
+
   Future<void> _loadTheme() async {
     final v = await _storage.loadThemeColor();
     if (v != null) {
@@ -98,8 +133,12 @@ class _NowtifriedAppState extends State<NowtifriedApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Nowtifried',
-      theme: ThemeData(primarySwatch: generateMaterialColor(_themeColor)),
+      theme: ThemeData(
+        primarySwatch: generateMaterialColor(_themeColor),
+        textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Inter'),
+      ),
       home: HomeScreen(onThemeChanged: _updateTheme),
       routes: {
         '/add': (_) => AddScheduleScreen(),
