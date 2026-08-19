@@ -22,4 +22,20 @@ class WidgetService {
       // ignore errors; native parts may not be installed yet
     }
   }
+
+  // Debug helper: returns a map of shared preference names and their schedules_json value (if present)
+  static Future<Map<String, String?>> dumpSharedPrefsCandidates() async {
+    final candidates = ['com.example.nowtifried.HomeWidget', 'home_widget', 'FlutterSharedPreferences', 'com.example.nowtifried'];
+    final result = <String, String?>{};
+    for (var name in candidates) {
+      try {
+        final val = await HomeWidget.getWidgetData<String>('schedules_json');
+        // Note: HomeWidget.getWidgetData reads the plugin-managed store; it may return the saved JSON or null.
+        result[name] = val;
+      } catch (e) {
+        result[name] = null;
+      }
+    }
+    return result;
+  }
 }

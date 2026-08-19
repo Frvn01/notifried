@@ -29,6 +29,10 @@ Widget setup (Android scaffolded)
 - To fully enable the widget: merge the files into your app, ensure the package path matches your app package, rebuild the Android app, then add the widget from the launcher. For a dynamic widget tied to app data, follow the `home_widget` package docs and adapt `NowtifriedWidgetProvider` to read the `schedules_json` value saved by the plugin.
  - To fully enable the widget: merge the files into your app, ensure the package path matches your app package, rebuild the Android app, then add the widget from the launcher. The scaffolded `NowtifriedWidgetProvider` attempts to read `schedules_json` from SharedPreferences and shows the next 3 upcoming schedules.
  - If you use the `home_widget` plugin (Dart) to save `schedules_json`, the provider will pick it up; if your project uses a different SharedPreferences name, update `NowtifriedWidgetProvider.readSchedulesJson` to match the actual preferences name used on your device.
+ - If you use the `home_widget` plugin (Dart) to save `schedules_json`, the provider will pick it up; if your project uses a different SharedPreferences name, update `NowtifriedWidgetProvider.readSchedulesJson` to match the actual preferences name used on your device. Use the in-app debug button (bug icon in the top-right) to dump probable SharedPreferences values to help find the correct key.
+
+Logo
+- Place your app logo PNG named `7a5d0964-bc22-4940-9d1a-9d5b53a2f6a0.png` under `assets/` so it is available at `assets/7a5d0964-bc22-4940-9d1a-9d5b53a2f6a0.png`. The app bar uses this asset; to make it the launcher icon, follow Flutter's launcher icon configuration steps or use `flutter_launcher_icons`.
 
 Storage (Hive)
 - The app now uses `hive` and `hive_flutter` for local storage; no external backend required. Hive stores data inside the app's sandbox.

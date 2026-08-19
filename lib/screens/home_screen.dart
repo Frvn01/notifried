@@ -52,7 +52,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nowtifried'),
+        title: Row(children: [
+          Image.asset('assets/7a5d0964-bc22-4940-9d1a-9d5b53a2f6a0.png', height: 34, width: 34, errorBuilder: (c, e, s) => SizedBox.shrink()),
+          SizedBox(width: 10),
+          Text('Nowtifried')
+        ]),
         elevation: 0,
         backgroundColor: Colors.transparent,
         actions: [
@@ -82,6 +86,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 widget.onThemeChanged(picked);
                 await _storage.saveThemeColor(picked.value);
               }
+            },
+          )
+          ,
+          IconButton(
+            icon: Icon(Icons.bug_report),
+            onPressed: () async {
+              // Dump shared prefs candidates via WidgetService
+              final map = await WidgetService.dumpSharedPrefsCandidates();
+              final entries = map.entries.map((e) => '${e.key}: ${e.value == null ? '<null>' : (e.value!.length > 200 ? e.value!.substring(0,200) + '...' : e.value)}').join('\n\n');
+              showDialog(context: context, builder: (_) => AlertDialog(title: Text('SharedPrefs dump'), content: SingleChildScrollView(child: SelectableText(entries)), actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close'))]));
             },
           )
         ],

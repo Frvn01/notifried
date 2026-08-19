@@ -20,8 +20,27 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
         views.setTextViewText(R.id.widget_title, "Nowtifried")
 
         val schedulesJson = readSchedulesJson(context)
-        val summary = buildSummaryFromJson(schedulesJson)
-        views.setTextViewText(R.id.widget_sub, summary)
+        val entries = buildEntriesFromJson(schedulesJson)
+
+        // Populate up to 3 lines and colored dots
+        val idsLine = listOf(R.id.widget_line1, R.id.widget_line2, R.id.widget_line3)
+        val idsDot = listOf(R.id.widget_dot1, R.id.widget_dot2, R.id.widget_dot3)
+        for (i in 0..2) {
+            if (i < entries.size) {
+                val (timeStr, title, colorInt) = entries[i]
+                views.setViewVisibility(idsLine[i], android.view.View.VISIBLE)
+                views.setViewVisibility(idsDot[i], android.view.View.VISIBLE)
+                views.setTextViewText(idsLine[i], "$timeStr • $title")
+                try {
+                    views.setInt(idsDot[i], "setBackgroundColor", colorInt)
+                } catch (e: Exception) {
+                    // ignore color set failure
+                }
+            } else {
+                views.setViewVisibility(idsLine[i], android.view.View.GONE)
+                views.setViewVisibility(idsDot[i], android.view.View.GONE)
+            }
+        }
 
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         val pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
@@ -38,10 +57,10 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
         val names = listOf("com.example.nowtifried.HomeWidget", "home_widget", "FlutterSharedPreferences")
         for (name in names) {
             try {
-                val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-                if (prefs.contains("schedules_json")) {
-                    return prefs.getString("schedules_json", null)
-                }
+                    val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+                    if (prefs.contains("schedules_json")) {
+                        return prefs.getString("schedules_json", null)
+                    }
             } catch (e: Exception) {
                 // ignore and try next
             }
@@ -49,21 +68,23 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
         return null
     }
 
-    private fun buildSummaryFromJson(json: String?): String {
-        if (json == null) return "No schedules"
+    private fun buildEntriesFromJson(json: String?): List<Triple<String, String, Int>> {
+        val results = mutableListOf<Triple<String, String, Int>>()
+        if (json == null) return results
         try {
             val arr = JSONArray(json)
             val now = Instant.now()
-            val items = mutableListOf<Pair<Instant, String>>()
+            val items = mutableListOf<Triple<Instant, String, Int>>()
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 val title = obj.optString("title", "")
                 val startStr = obj.optString("start", null)
+                val color = obj.optInt("color", 0xFF888888.toInt())
                 if (startStr == null) continue
                 try {
                     val inst = Instant.parse(startStr)
                     if (inst.isAfter(now)) {
-                        items.add(Pair(inst, title))
+                        items.add(Triple(inst, title, color))
                     }
                 } catch (e: Exception) {
                     // ignore parse error
@@ -71,11 +92,13 @@ class NowtifriedWidgetProvider : AppWidgetProvider() {
             }
             items.sortBy { it.first }
             val fmt = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
-            val lines = items.take(3).map { (time, title) -> "${fmt.format(time)} • $title" }
-            if (lines.isEmpty()) return "No upcoming schedules"
-            return lines.joinToString("\n")
+            val top = items.take(3)
+            for ((time, title, color) in top) {
+                results.add(Triple(fmt.format(time), title, color))
+            }
         } catch (e: Exception) {
-            return "No schedules"
+            // ignore
         }
+        return results
     }
 }
