@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.nowtifried">
+
+    <!-- Permission for Android 13+ to post notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:label="nowtifried"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Add widget provider and other native integrations per `home_widget`'s README. -->
+    </application>
+</manifest>

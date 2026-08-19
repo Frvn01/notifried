@@ -1,0 +1,27 @@
+name: nowtifried
+description: A schedule system with persistent local notifications.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  flutter_local_notifications: ^12.0.4
+  timezone: ^0.8.0
+  shared_preferences: ^2.0.15
+  intl: ^0.17.0
+  permission_handler: ^10.4.0
+  home_widget: ^0.0.8
+  uuid: ^3.0.6
+  flutter_colorpicker: ^1.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
