@@ -89,41 +89,70 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [Theme.of(context).primaryColor.withOpacity(0.15), Colors.white], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+          gradient: LinearGradient(colors: [Theme.of(context).primaryColor.withOpacity(0.22), Color(0xFFf7efe6)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         ),
-        padding: EdgeInsets.only(top: kToolbarHeight + 24, left: 12, right: 12),
-        child: _schedules.isEmpty
-            ? Center(child: Text('No schedules yet.', style: TextStyle(fontSize: 18)))
-            : ListView.builder(
-                itemCount: _schedules.length,
-                itemBuilder: (_, i) {
-                  final s = _schedules[i];
-                  return Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      leading: CircleAvatar(backgroundColor: Color(s.colorValue), radius: 26),
-                      title: Text(s.title, style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${s.type} • ${_formatRange(s)}', style: TextStyle(color: Colors.grey[700])),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete_outline),
-                        onPressed: () => _removeSchedule(s),
-                      ),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: Text(s.title),
-                            content: Text('${s.type}\n${_formatRange(s)}'),
-                            actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close'))],
+        padding: EdgeInsets.only(top: kToolbarHeight + 28, left: 16, right: 16),
+        child: Column(
+          children: [
+            // Header card with date and next schedule
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(18)),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(DateFormat('EEEE, MMM d').format(DateTime.now()), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 6),
+                      Text(_schedules.isNotEmpty ? _schedules.first.title : 'No schedules today', style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                    ]),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(color: Theme.of(context).primaryColor, shape: BoxShape.circle),
+                    child: Icon(Icons.schedule, color: Colors.white),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(height: 12),
+            Expanded(
+              child: _schedules.isEmpty
+                  ? Center(child: Text('No schedules yet.', style: TextStyle(fontSize: 18)))
+                  : ListView.builder(
+                      itemCount: _schedules.length,
+                      itemBuilder: (_, i) {
+                        final s = _schedules[i];
+                        return Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            leading: CircleAvatar(backgroundColor: Color(s.colorValue), radius: 26),
+                            title: Text(s.title, style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text('${s.type} • ${_formatRange(s)}', style: TextStyle(color: Colors.grey[700])),
+                            trailing: IconButton(
+                              icon: Icon(Icons.delete_outline),
+                              onPressed: () => _removeSchedule(s),
+                            ),
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: Text(s.title),
+                                  content: Text('${s.type}\n${_formatRange(s)}'),
+                                  actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close'))],
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
                     ),
-                  );
-                },
-              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _add,
