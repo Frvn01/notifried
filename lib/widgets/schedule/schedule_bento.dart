@@ -598,16 +598,16 @@ class _ScheduleBentoState extends State<ScheduleBento>
 
                         // Bento Subject Chips Grid
                         if (displayClasses.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            child: Center(
-                              child: Text(
-                                'No subjects scheduled for this day',
-                                style: TextStyle(fontSize: 13, color: textMuted),
-                              ),
-                            ),
+                          _buildEmptyDayCard(
+                            context,
+                            prov: prov,
+                            isDark: isDark,
+                            primary: primary,
+                            tileSurface: tileSurface,
+                            textPrimary: textPrimary,
+                            textMuted: textMuted,
                           )
-                        else
+                        else ...[
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -681,6 +681,21 @@ class _ScheduleBentoState extends State<ScheduleBento>
                                 );
                               }).toList(),
                             ),
+                          // If only 1 class and widget has vertical room (e.g. 400x260 or 400x380),
+                          // show an upcoming task or status tile so there is no awkward blank space.
+                          if (displayClasses.length == 1 && renderH >= 230) ...[
+                            const SizedBox(height: 10),
+                            _buildRestOfDayTile(
+                              context,
+                              prov: prov,
+                              isDark: isDark,
+                              primary: primary,
+                              tileSurface: tileSurface,
+                              textPrimary: textPrimary,
+                              textMuted: textMuted,
+                            ),
+                          ],
+                        ],
                       ],
                     ),
                   );
@@ -693,6 +708,166 @@ class _ScheduleBentoState extends State<ScheduleBento>
     },
   ),
 );
+  }
+
+  Widget _buildRestOfDayTile(
+    BuildContext context, {
+    required ScheduleProvider prov,
+    required bool isDark,
+    required Color primary,
+    required Color tileSurface,
+    required Color textPrimary,
+    required Color textMuted,
+  }) {
+    final pendingTasks = prov.tasks.where((t) => !t.isDone).toList();
+    final topTask = pendingTasks.isNotEmpty ? pendingTasks.first : null;
+
+    if (topTask != null) {
+      final urgencyCol = prov.urgencyColor(topTask);
+      return _buildBentoTile(
+        isDark: isDark,
+        tileSurface: tileSurface,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: urgencyCol.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(topTask.typeIcon, size: 14, color: urgencyCol),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: urgencyCol.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          topTask.type.toUpperCase(),
+                          style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: urgencyCol),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Due ${topTask.dueFormatted}',
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: textMuted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    topTask.title,
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPrimary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(CupertinoIcons.chevron_right, size: 12, color: textMuted),
+          ],
+        ),
+      );
+    }
+
+    return _buildBentoTile(
+      isDark: isDark,
+      tileSurface: tileSurface,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00B894).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: const Icon(CupertinoIcons.checkmark_seal_fill, size: 14, color: Color(0xFF00B894)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'No more classes today',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPrimary),
+                ),
+                Text(
+                  'All clear! Review your materials or relax.',
+                  style: TextStyle(fontSize: 9, color: textMuted, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyDayCard(
+    BuildContext context, {
+    required ScheduleProvider prov,
+    required bool isDark,
+    required Color primary,
+    required Color tileSurface,
+    required Color textPrimary,
+    required Color textMuted,
+  }) {
+    final pendingTasks = prov.tasks.where((t) => !t.isDone).toList();
+    final topTask = pendingTasks.isNotEmpty ? pendingTasks.first : null;
+
+    return _buildBentoTile(
+      isDark: isDark,
+      tileSurface: tileSurface,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(
+              topTask != null ? CupertinoIcons.square_list_fill : CupertinoIcons.calendar_badge_minus,
+              size: 14,
+              color: primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  topTask != null ? 'Free Day · Next: ${topTask.title}' : 'No classes scheduled for this day',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  topTask != null ? 'Due ${topTask.dueFormatted} · Tap to view checklist' : 'Enjoy your free time!',
+                  style: TextStyle(fontSize: 9, color: textMuted, fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBentoTile({

@@ -118,8 +118,9 @@ class WidgetService {
   static Widget _buildRenderWidget(
     WidgetDataBundle bundle,
     WidgetSize size,
-    Size logicalSize,
-  ) {
+    Size logicalSize, {
+    int? selectedWeekday,
+  }) {
     final isDark = bundle.themeMode == 'dark' ||
         bundle.bgStyle == 'obsidian' ||
         bundle.bgStyle == 'cyber';
@@ -142,7 +143,7 @@ class WidgetService {
     prov.tasks = bundle.tasks.isNotEmpty
         ? bundle.tasks
         : List.from(sampleTasks);
-    prov.selectedWeekday = DateTime.now().weekday;
+    prov.selectedWeekday = selectedWeekday ?? DateTime.now().weekday.clamp(1, 6);
 
     if (bundle.widgetFamily == 'tasks') {
       prov.setDeadlineFilter('task');
@@ -216,15 +217,7 @@ class WidgetService {
                 child: SizedBox(
                   width: logicalSize.width,
                   height: logicalSize.height,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.center,
-                    child: SizedBox(
-                      width: logicalSize.width,
-                      height: logicalSize.height,
-                      child: variantWidget,
-                    ),
-                  ),
+                  child: variantWidget,
                 ),
               ),
             ),
@@ -303,7 +296,7 @@ class WidgetService {
         logicalSize: const Size(380, 90),
       );
 
-      // Dedicated Schedule Widget images (5 breakpoints)
+      // Dedicated Schedule Widget images (pre-rendered for all 6 weekdays for in-place home screen interactivity)
       final schedBundle = WidgetDataBundle(
         schedules: bundle.schedules,
         tasks: bundle.tasks,
@@ -315,28 +308,58 @@ class WidgetService {
         widgetVariant: bundle.widgetVariant,
         customTitle: bundle.customTitle.isNotEmpty ? bundle.customTitle : 'Schedule',
       );
+
+      final todayWeekday = DateTime.now().weekday.clamp(1, 6);
+
+      // Pre-render day variants 1..6 for both large and xlarge
+      for (int day = 1; day <= 6; day++) {
+        await HomeWidget.renderFlutterWidget(
+          _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 380), selectedWeekday: day),
+          key: 'widget_schedule_xlarge_day_$day',
+          logicalSize: const Size(400, 380),
+        );
+        await HomeWidget.renderFlutterWidget(
+          _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 260), selectedWeekday: day),
+          key: 'widget_schedule_large_day_$day',
+          logicalSize: const Size(400, 260),
+        );
+
+        if (bundle.widgetFamily == 'schedule') {
+          await HomeWidget.renderFlutterWidget(
+            _buildRenderWidget(bundle, WidgetSize.large, const Size(400, 380), selectedWeekday: day),
+            key: 'widget_xlarge_day_$day',
+            logicalSize: const Size(400, 380),
+          );
+          await HomeWidget.renderFlutterWidget(
+            _buildRenderWidget(bundle, WidgetSize.large, const Size(400, 260), selectedWeekday: day),
+            key: 'widget_large_day_$day',
+            logicalSize: const Size(400, 260),
+          );
+        }
+      }
+
       await HomeWidget.renderFlutterWidget(
-        _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 380)),
+        _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 380), selectedWeekday: todayWeekday),
         key: 'widget_schedule_xlarge_image',
         logicalSize: const Size(400, 380),
       );
       await HomeWidget.renderFlutterWidget(
-        _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 260)),
+        _buildRenderWidget(schedBundle, WidgetSize.large, const Size(400, 260), selectedWeekday: todayWeekday),
         key: 'widget_schedule_large_image',
         logicalSize: const Size(400, 260),
       );
       await HomeWidget.renderFlutterWidget(
-        _buildRenderWidget(schedBundle, WidgetSize.medium, const Size(400, 170)),
+        _buildRenderWidget(schedBundle, WidgetSize.medium, const Size(400, 170), selectedWeekday: todayWeekday),
         key: 'widget_schedule_medium_image',
         logicalSize: const Size(400, 170),
       );
       await HomeWidget.renderFlutterWidget(
-        _buildRenderWidget(schedBundle, WidgetSize.small, const Size(400, 90)),
+        _buildRenderWidget(schedBundle, WidgetSize.small, const Size(400, 90), selectedWeekday: todayWeekday),
         key: 'widget_schedule_bar_image',
         logicalSize: const Size(400, 90),
       );
       await HomeWidget.renderFlutterWidget(
-        _buildRenderWidget(schedBundle, WidgetSize.small, const Size(200, 200)),
+        _buildRenderWidget(schedBundle, WidgetSize.small, const Size(200, 200), selectedWeekday: todayWeekday),
         key: 'widget_schedule_small_image',
         logicalSize: const Size(200, 200),
       );

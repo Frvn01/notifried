@@ -97,6 +97,52 @@ void main() {
       expect(find.byType(ScheduleBento), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('ScheduleBento renders safely with 1 class and shows rest-of-day tile when large', (tester) async {
+      final singleClassProvider = ScheduleProvider();
+      singleClassProvider.schedules = [sampleSchedules.first];
+      singleClassProvider.tasks = List.from(sampleTasks);
+      singleClassProvider.selectedWeekday = 1;
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: ChangeNotifierProvider<ScheduleProvider>.value(
+            value: singleClassProvider,
+            child: SizedBox(
+              width: 400,
+              height: 380,
+              child: ScheduleBento(provider: singleClassProvider, size: WidgetSize.large),
+            ),
+          ),
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(ScheduleBento), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ScheduleBento renders safely with 0 classes on empty day', (tester) async {
+      final emptyProvider = ScheduleProvider();
+      emptyProvider.schedules = [];
+      emptyProvider.tasks = List.from(sampleTasks);
+      emptyProvider.selectedWeekday = 7; // Sunday
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: ChangeNotifierProvider<ScheduleProvider>.value(
+            value: emptyProvider,
+            child: SizedBox(
+              width: 400,
+              height: 380,
+              child: ScheduleBento(provider: emptyProvider, size: WidgetSize.large),
+            ),
+          ),
+        ),
+      ));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(ScheduleBento), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group("Raven's Agenda - Deadlines Family (5 Variants)", () {

@@ -191,13 +191,53 @@ class _ScheduleTimelineState extends State<ScheduleTimeline>
 
                             // Timeline list or empty state
                             if (classes.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
-                                child: Center(
-                                  child: Text(
-                                    'No classes scheduled for this day',
-                                    style: TextStyle(fontSize: 13, color: textMuted),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: primary.withValues(alpha: isDark ? 0.12 : 0.05),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: primary.withValues(alpha: 0.18),
+                                    width: 1,
                                   ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: primary.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(9),
+                                      ),
+                                      child: Icon(CupertinoIcons.calendar_badge_minus, size: 14, color: primary),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'No classes scheduled for this day',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w800,
+                                              color: textPrimary,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Free day! Review materials or relax.',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              color: textMuted,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               )
                             else ...[
@@ -227,7 +267,7 @@ class _ScheduleTimelineState extends State<ScheduleTimeline>
                                 },
                               ),
                               // If only 1 class in Large layout, fill space with an executive productive card
-                              if (!isMedium && classes.length == 1 && renderH >= 260)
+                              if (!isMedium && classes.length == 1 && renderH >= 230)
                                 Container(
                                   margin: const EdgeInsets.only(top: 8),
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -266,7 +306,7 @@ class _ScheduleTimelineState extends State<ScheduleTimeline>
                                             Text(
                                               'No more subjects scheduled for today.',
                                               style: TextStyle(
-                                                fontSize: 10,
+                                                fontSize: 9,
                                                 color: textMuted,
                                                 fontWeight: FontWeight.w500,
                                               ),

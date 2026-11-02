@@ -44,6 +44,7 @@
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.nowtifried.ACTION_SELECT_DAY" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_schedule" />
         </receiver>
@@ -75,6 +76,7 @@
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.nowtifried.ACTION_SELECT_DAY" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/nowtifried_widget_info" />
         </receiver>
@@ -84,6 +86,7 @@
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.nowtifried.ACTION_SELECT_DAY" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_large" />
         </receiver>
@@ -111,6 +114,7 @@
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.example.nowtifried.ACTION_SELECT_DAY" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_extra_large" />
         </receiver>

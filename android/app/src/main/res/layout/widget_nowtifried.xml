@@ -20,6 +20,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:weightSum="100"
+        android:baselineAligned="false"
         android:visibility="gone">
 
         <!-- Top Touch Area (Tapping hero card launches schedule in app) -->
@@ -27,7 +28,7 @@
             android:id="@+id/touch_top_area"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="40"
+            android:layout_weight="44"
             android:clickable="true"
             android:focusable="true" />
 
@@ -36,11 +37,12 @@
             android:id="@+id/day_buttons_row"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="18"
+            android:layout_weight="16"
             android:orientation="horizontal"
             android:weightSum="6"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp">
+            android:clickable="false"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp">
 
             <TextView
                 android:id="@+id/btn_day_1"
@@ -103,7 +105,7 @@
             android:id="@+id/touch_bottom_area"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="42"
+            android:layout_weight="40"
             android:clickable="true"
             android:focusable="true" />
 
