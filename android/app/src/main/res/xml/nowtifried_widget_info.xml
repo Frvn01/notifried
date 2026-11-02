@@ -2,7 +2,13 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="146dp"
     android:minHeight="72dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="70dp"
+    android:maxResizeWidth="500dp"
+    android:maxResizeHeight="500dp"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_nowtifried"
     android:resizeMode="horizontal|vertical"
-    android:previewImage="@layout/widget_nowtifried" />
+    android:widgetFeatures="reconfigurable"
+    android:description="@string/widget_agenda_desc"
+    android:previewImage="@drawable/widget_background" />

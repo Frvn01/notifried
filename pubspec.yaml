@@ -14,7 +14,7 @@ dependencies:
   timezone: ^0.11.1
   shared_preferences: ^2.0.15
   intl: ^0.17.0
-  permission_handler: ^10.4.0
+  permission_handler: ^12.0.1
   # Use a permissive constraint for `home_widget` so pub can resolve packages.
   # If you prefer a specific version or a git source, replace `any` with that.
   home_widget: any
@@ -23,18 +23,18 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   flutter_svg: ^2.1.0
+  google_fonts: ^6.2.1
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  hive_generator: ^2.0.1
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/7a5d0964-bc22-4940-9d1a-9d5b53a2f6a0.png
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
+    - assets/logo.png

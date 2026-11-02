@@ -7,113 +7,163 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import org.json.JSONArray
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import es.antonborri.home_widget.HomeWidgetPlugin
 
-class NowtifriedWidgetProvider : AppWidgetProvider() {
+open class NowtifriedWidgetProvider : AppWidgetProvider() {
+
+    open val explicitImageKey: String? = null
+    open val widgetTypePrefix: String? = null // "schedule", "deadlines", "tasks"
+
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-
-        val views = RemoteViews(context.packageName, R.layout.widget_nowtifried)
-        views.setTextViewText(R.id.widget_title, "Nowtifried")
-
-        val schedulesJson = readSchedulesJson(context)
-        val entries = buildEntriesFromJson(schedulesJson)
-
-        // Populate up to 3 lines and colored dots, and set per-line click intents with schedule id
-        val idsLine = listOf(R.id.widget_line1, R.id.widget_line2, R.id.widget_line3)
-        val idsDot = listOf(R.id.widget_dot1, R.id.widget_dot2, R.id.widget_dot3)
-        for (i in 0..2) {
-            if (i < entries.size) {
-                val (timeStr, title, colorInt, id) = entries[i]
-                views.setViewVisibility(idsLine[i], android.view.View.VISIBLE)
-                views.setViewVisibility(idsDot[i], android.view.View.VISIBLE)
-                views.setTextViewText(idsLine[i], "$timeStr • $title")
-                try {
-                    views.setInt(idsDot[i], "setBackgroundColor", colorInt)
-                } catch (e: Exception) {
-                    // ignore color set failure
-                }
-
-                // Create PendingIntent to open the app and include the schedule id as extra
-                try {
-                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                    intent?.putExtra("schedule_id", id)
-                    val pi = PendingIntent.getActivity(context, id.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE)
-                    views.setOnClickPendingIntent(idsLine[i], pi)
-                    views.setOnClickPendingIntent(idsDot[i], pi)
-                } catch (e: Exception) {
-                    // ignore pending intent failures
-                }
-            } else {
-                views.setViewVisibility(idsLine[i], android.view.View.GONE)
-                views.setViewVisibility(idsDot[i], android.view.View.GONE)
-            }
+        for (appWidgetId in appWidgetIds) {
+            updateSingleWidget(context, appWidgetManager, appWidgetId)
         }
-
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        val pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        views.setOnClickPendingIntent(R.id.widget_title, pending)
-        views.setOnClickPendingIntent(R.id.widget_sub, pending)
-
-        val thisWidget = ComponentName(context, NowtifriedWidgetProvider::class.java)
-        appWidgetManager.updateAppWidget(thisWidget, views)
     }
 
-    private fun readSchedulesJson(context: Context): String? {
-        // The `home_widget` plugin saves values to SharedPreferences under a provider-specific name.
-        // Try the common SharedPreferences locations where `home_widget` may write data.
-        val names = listOf("com.example.nowtifried.HomeWidget", "home_widget", "FlutterSharedPreferences")
-        for (name in names) {
-            try {
-                    val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
-                    if (prefs.contains("schedules_json")) {
-                        return prefs.getString("schedules_json", null)
-                    }
-            } catch (e: Exception) {
-                // ignore and try next
-            }
-        }
-        return null
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        updateSingleWidget(context, appWidgetManager, appWidgetId)
     }
 
-    private fun buildEntriesFromJson(json: String?): List<Quadruple<String, String, Int, String>> {
-        val results = mutableListOf<Quadruple<String, String, Int, String>>()
-        if (json == null) return results
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
         try {
-            val arr = JSONArray(json)
-            val now = Instant.now()
-            val items = mutableListOf<Quadruple<Instant, String, Int, String>>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                val title = obj.optString("title", "")
-                val startStr = obj.optString("start", null)
-                val color = obj.optInt("color", 0xFF888888.toInt())
-                val id = obj.optString("id", "")
-                if (startStr == null) continue
-                try {
-                    val inst = Instant.parse(startStr)
-                    if (inst.isAfter(now)) {
-                        items.add(Quadruple(inst, title, color, id))
-                    }
-                } catch (e: Exception) {
-                    // ignore parse error
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val thisWidget = ComponentName(context, this::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
+            if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
+                for (appWidgetId in appWidgetIds) {
+                    updateSingleWidget(context, appWidgetManager, appWidgetId)
                 }
             }
-            items.sortBy { it.first }
-            val fmt = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
-            val top = items.take(3)
-            for ((time, title, color, id) in top) {
-                results.add(Quadruple(fmt.format(time), title, color, id))
-            }
-        } catch (e: Exception) {
-            // ignore
-        }
-        return results
+        } catch (_: Exception) {}
     }
 
-    // Simple quadruple data class for Kotlin 1.3 compatibility
-    data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
+    private fun updateSingleWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+        try {
+            val views = RemoteViews(context.packageName, R.layout.widget_nowtifried)
+            
+            // Determine size
+            val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+            val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+            val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+
+            val widgetData = HomeWidgetPlugin.getData(context)
+
+            // Determine image key based on widgetTypePrefix and resized dimensions.
+            // Android widget grid cell formula: dp = (cells * 70) - 30.
+            //   1 row:  ~40-90 dp
+            //   2 rows: ~100-160 dp
+            //   3 rows: ~170-230 dp
+            //   4 rows: ~240-350 dp
+            //   2 cols: ~100-190 dp (square / compact)
+            //   4 cols: ~250-380 dp (full width)
+            val isNarrow = minWidth in 1..199
+
+            val imageKey = when {
+                explicitImageKey != null -> explicitImageKey!!
+                widgetTypePrefix == "schedule" -> when {
+                    isNarrow         -> "widget_schedule_small_image"
+                    minHeight >= 230 -> "widget_schedule_xlarge_image"
+                    minHeight >= 160 -> "widget_schedule_large_image"
+                    minHeight >= 95  -> "widget_schedule_medium_image"
+                    else             -> "widget_schedule_bar_image"
+                }
+                widgetTypePrefix == "deadlines" -> when {
+                    isNarrow         -> "widget_deadlines_small_image"
+                    minHeight >= 230 -> "widget_deadlines_xlarge_image"
+                    minHeight >= 160 -> "widget_deadlines_large_image"
+                    minHeight >= 95  -> "widget_deadlines_medium_image"
+                    else             -> "widget_deadlines_bar_image"
+                }
+                widgetTypePrefix == "tasks" -> when {
+                    isNarrow         -> "widget_tasks_small_image"
+                    minHeight >= 230 -> "widget_tasks_xlarge_image"
+                    minHeight >= 160 -> "widget_tasks_large_image"
+                    minHeight >= 95  -> "widget_tasks_medium_image"
+                    else             -> "widget_tasks_bar_image"
+                }
+                else -> when {
+                    isNarrow         -> "widget_small_image"
+                    minHeight >= 230 -> "widget_extra_large_image"
+                    minHeight >= 160 -> "widget_large_image"
+                    minHeight >= 95  -> "widget_medium_image"
+                    else             -> "widget_bar_image"
+                }
+            }
+
+            var imagePath = widgetData.getString(imageKey, null)
+            if (imagePath == null) {
+                // Family-specific fallback chain, then generic adaptive fallbacks
+                val prefix = if (widgetTypePrefix != null) "widget_${widgetTypePrefix}_" else "widget_"
+                imagePath = widgetData.getString("${prefix}xlarge_image", null)
+                    ?: widgetData.getString("${prefix}large_image", null)
+                    ?: widgetData.getString("${prefix}medium_image", null)
+                    ?: widgetData.getString("${prefix}bar_image", null)
+                    ?: widgetData.getString("${prefix}small_image", null)
+                    ?: widgetData.getString("widget_extra_large_image", null)
+                    ?: widgetData.getString("widget_large_image", null)
+                    ?: widgetData.getString("widget_medium_image", null)
+            }
+
+            if (imagePath != null) {
+                val bitmap = android.graphics.BitmapFactory.decodeFile(imagePath)
+                if (bitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_image, bitmap)
+                }
+            }
+
+            // Click to open app and optionally navigate to the right section
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            if (launchIntent != null) {
+                if (widgetTypePrefix != null) {
+                    launchIntent.putExtra("target_tab", widgetTypePrefix)
+                }
+                val pending = PendingIntent.getActivity(
+                    context, appWidgetId, launchIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.widget_root, pending)
+                views.setOnClickPendingIntent(R.id.widget_image, pending)
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
+class ScheduleWidgetProvider : NowtifriedWidgetProvider() {
+    override val widgetTypePrefix = "schedule"
+}
+
+class DeadlinesWidgetProvider : NowtifriedWidgetProvider() {
+    override val widgetTypePrefix = "deadlines"
+}
+
+class TasksWidgetProvider : NowtifriedWidgetProvider() {
+    override val widgetTypePrefix = "tasks"
+}
+
+class NowtifriedLargeWidgetProvider : NowtifriedWidgetProvider() {
+    override val explicitImageKey = "widget_large_image"
+}
+class NowtifriedMediumWidgetProvider : NowtifriedWidgetProvider() {
+    override val explicitImageKey = "widget_medium_image"
+}
+class NowtifriedSmallWidgetProvider : NowtifriedWidgetProvider() {
+    override val explicitImageKey = "widget_small_image"
+}
+class NowtifriedExtraLargeWidgetProvider : NowtifriedWidgetProvider() {
+    override val explicitImageKey = "widget_extra_large_image"
+}
+class NowtifriedGlanceWidgetProvider : NowtifriedWidgetProvider() {
+    override val explicitImageKey = "widget_glance_image"
 }

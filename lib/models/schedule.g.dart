@@ -1,6 +1,10 @@
-// GENERATED CODE - manual adapter
-import 'package:hive/hive.dart';
-import 'schedule.dart';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'schedule.dart';
+
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
 
 class ScheduleAdapter extends TypeAdapter<Schedule> {
   @override
@@ -9,38 +13,53 @@ class ScheduleAdapter extends TypeAdapter<Schedule> {
   @override
   Schedule read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{};
-    for (var i = 0; i < numOfFields; i++) {
-      final key = reader.readByte();
-      fields[key] = reader.read();
-    }
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
     return Schedule(
       id: fields[0] as String,
       title: fields[1] as String,
       type: fields[2] as String,
-      start: DateTime.parse(fields[3] as String),
-      end: DateTime.parse(fields[4] as String),
+      start: fields[3] as DateTime,
+      end: fields[4] as DateTime,
       colorValue: fields[5] as int,
       notificationId: fields[6] as int?,
+      daysOfWeek: (fields[7] as List?)?.cast<int>(),
+      room: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Schedule obj) {
-    writer.writeByte(7);
-    writer.writeByte(0);
-    writer.write(obj.id);
-    writer.writeByte(1);
-    writer.write(obj.title);
-    writer.writeByte(2);
-    writer.write(obj.type);
-    writer.writeByte(3);
-    writer.write(obj.start.toIso8601String());
-    writer.writeByte(4);
-    writer.write(obj.end.toIso8601String());
-    writer.writeByte(5);
-    writer.write(obj.colorValue);
-    writer.writeByte(6);
-    writer.write(obj.notificationId);
+    writer
+      ..writeByte(9)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.title)
+      ..writeByte(2)
+      ..write(obj.type)
+      ..writeByte(3)
+      ..write(obj.start)
+      ..writeByte(4)
+      ..write(obj.end)
+      ..writeByte(5)
+      ..write(obj.colorValue)
+      ..writeByte(6)
+      ..write(obj.notificationId)
+      ..writeByte(7)
+      ..write(obj.daysOfWeek)
+      ..writeByte(8)
+      ..write(obj.room);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScheduleAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

@@ -12,11 +12,16 @@ class MainActivity: FlutterActivity() {
 		super.configureFlutterEngine(flutterEngine)
 
 		MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-			if (call.method == "getInitialScheduleId") {
-				val id = intent?.getStringExtra("schedule_id")
-				result.success(id)
-			} else {
-				result.notImplemented()
+			when (call.method) {
+				"getInitialScheduleId" -> {
+					val id = intent?.getStringExtra("schedule_id")
+					result.success(id)
+				}
+				"getInitialTargetTab" -> {
+					val tab = intent?.getStringExtra("target_tab")
+					result.success(tab)
+				}
+				else -> result.notImplemented()
 			}
 		}
 	}
@@ -30,9 +35,15 @@ class MainActivity: FlutterActivity() {
 				flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
 					MethodChannel(messenger, CHANNEL).invokeMethod("onWidgetTap", id)
 				}
-			} catch (e: Exception) {
-				// ignore
-			}
+			} catch (_: Exception) {}
+		}
+		val targetTab = intent.getStringExtra("target_tab")
+		if (targetTab != null) {
+			try {
+				flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+					MethodChannel(messenger, CHANNEL).invokeMethod("onNavigateTab", targetTab)
+				}
+			} catch (_: Exception) {}
 		}
 	}
 }

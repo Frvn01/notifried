@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nowtifried</string>
+    <string name="widget_schedule_label">Schedule • Timetable</string>
+    <string name="widget_schedule_desc">Next class countdown &amp; daily subject timetable</string>
+    <string name="widget_deadlines_label">Deadlines • Exams &amp; Quizzes</string>
+    <string name="widget_deadlines_desc">Urgent academic exams, quizzes, and due dates</string>
+    <string name="widget_tasks_label">Tasks • Checklist</string>
+    <string name="widget_tasks_desc">Daily academic to-do checklist and assignments</string>
+    <string name="widget_agenda_label">Agenda • Command Center</string>
+    <string name="widget_agenda_desc">All-in-one daily routine, schedule, and stats</string>
+</resources>
+

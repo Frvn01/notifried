@@ -1,8 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.nowtifried">
 
-    <!-- Permission for Android 13+ to post notifications -->
+    <!-- Permissions for Notifications and Alarms -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:name="${applicationName}"
@@ -33,11 +37,91 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <receiver android:name="com.example.nowtifried.NowtifriedWidgetProvider" android:exported="true">
+        <!-- Dedicated Functional Purpose Widgets -->
+        <receiver android:name="com.example.nowtifried.ScheduleWidgetProvider" 
+                  android:label="@string/widget_schedule_label"
+                  android:description="@string/widget_schedule_desc"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_schedule" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.DeadlinesWidgetProvider" 
+                  android:label="@string/widget_deadlines_label"
+                  android:description="@string/widget_deadlines_desc"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_deadlines" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.TasksWidgetProvider" 
+                  android:label="@string/widget_tasks_label"
+                  android:description="@string/widget_tasks_desc"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_tasks" />
+        </receiver>
+
+        <!-- Dynamic Resizable Agenda Hub -->
+        <receiver android:name="com.example.nowtifried.NowtifriedWidgetProvider" 
+                  android:label="@string/widget_agenda_label"
+                  android:description="@string/widget_agenda_desc"
+                  android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/nowtifried_widget_info" />
+        </receiver>
+        
+        <receiver android:name="com.example.nowtifried.NowtifriedLargeWidgetProvider" 
+                  android:label="Agenda (Hero 4×2)"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_large" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.NowtifriedMediumWidgetProvider" 
+                  android:label="Agenda (Bar 4×1)"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_medium" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.NowtifriedSmallWidgetProvider" 
+                  android:label="Agenda (Square 2×2)"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_small" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.NowtifriedExtraLargeWidgetProvider" 
+                  android:label="Agenda (Full 4×4)"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_extra_large" />
+        </receiver>
+
+        <receiver android:name="com.example.nowtifried.NowtifriedGlanceWidgetProvider" 
+                  android:label="Agenda (Glance Pill)"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_glance" />
         </receiver>
     </application>
 </manifest>
